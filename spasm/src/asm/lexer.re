@@ -248,6 +248,48 @@ XINTEGER        {
 
                                 continue;
                         }
+"obj"         {
+                                ts.push_token (Token (Token::Obj, lineno));
+                                token_start = cursor;
+
+                                continue;
+              }
+"carr"         {
+                                ts.push_token (Token (Token::CreateArr, lineno));
+                                token_start = cursor;
+
+                                continue;
+              }
+"arrs"        {
+                                ts.push_token (Token (Token::ArrSize, lineno));
+                                token_start = cursor;
+
+                                continue;
+              }
+"mobj"        {
+                                ts.push_token (Token (Token::ModObj, lineno));
+                                token_start = cursor;
+
+                                continue;
+              }
+"objv"        {
+                                ts.push_token (Token (Token::ObjVal, lineno));
+                                token_start = cursor;
+
+                                continue;
+              }
+"marr"        {
+                                ts.push_token (Token (Token::ModArr, lineno));
+                                token_start = cursor;
+
+                                continue;
+              }
+"garr"        {
+                                ts.push_token (Token (Token::GetArrEl, lineno));
+                                token_start = cursor;
+
+                                continue;
+              }
 
 IDENTIFIER      {
                                 ts.push_token (Token (Token::Ident, lineno, token_start,
@@ -361,4 +403,3 @@ void Lexer::buffer_init ()
 
 }       // namespace ASM
 }       // namespace SpasmImpl
-

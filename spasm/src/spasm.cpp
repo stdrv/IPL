@@ -225,6 +225,80 @@ Spasm::RunResult Spasm::run()
                 not_equal(arg0, arg1, arg2);
                 break;
             }
+            case OpCodes::Obj:
+            {
+                const auto reg = read_reg(size);
+                const SPObjectValue obj_value;
+                const auto value = data_t(::Spasm::ValueType::Object, (void*)&obj_value);
+                set_local(reg, value);
+                break;
+            }
+            case OpCodes::ModObj:
+            {
+                const auto reg = read_reg(size);
+                const auto obj_dt = get_local(reg);
+                assert(obj_dt.get_type() == ::Spasm::ValueType::Object);
+                const auto obj = static_cast<SpasmImpl::SPObjectValue*>(obj_dt.get_pointer());
+                const auto key_dt = get_local(read_reg(size));
+                assert(key_dt.get_type() == ::Spasm::ValueType::String);
+                const auto key = static_cast<const SpasmImpl::SPStringValue*>(key_dt.get_pointer());
+                const auto val_reg = read_reg(size);
+                const auto key_v = key->GetValue();
+                obj->Put(key_v, val_reg);
+                break;
+            }
+            case OpCodes::ObjVal:
+            {
+                const auto obj_dt = get_local(read_reg(size));
+                assert(obj_dt.get_type() == ::Spasm::ValueType::Object);
+                const auto obj = static_cast<SpasmImpl::SPObjectValue*>(obj_dt.get_pointer());
+                const auto result_reg = read_reg(size);
+                const auto key_dt = get_local(read_reg(size));
+                assert(key_dt.get_type() == ::Spasm::ValueType::String);
+                const auto key = static_cast<const SpasmImpl::SPStringValue*>(key_dt.get_pointer());
+                const auto value_at = obj->Get(key->GetValue());
+                set_local(result_reg, get_local(value_at));
+                break;
+            }
+            case OpCodes::CreateArr:
+            {
+                const auto reg = read_reg(size);
+                const auto ar_size = read_reg(size);
+                const SPArrayValue arr_value(ar_size);
+                const auto value = data_t(::Spasm::ValueType::Array, (void*)&arr_value);
+                set_local(reg, value);
+                break;
+            }
+            case OpCodes::ModArr:
+            {
+                const auto arr_dt = get_local(read_reg(size));
+                assert(arr_dt.get_type() == ::Spasm::ValueType::Array);
+                const auto obj = static_cast<SpasmImpl::SPArrayValue*>(arr_dt.get_pointer());
+                const auto idx = read_reg(size);
+                const auto val_reg = read_reg(size);
+                obj->Put(idx, val_reg);
+                break;
+            }
+            case OpCodes::GetArrEl:
+            {
+                const auto arr_dt = get_local(read_reg(size));
+                assert(arr_dt.get_type() == ::Spasm::ValueType::Array);
+                const auto arr = static_cast<SpasmImpl::SPArrayValue*>(arr_dt.get_pointer());
+                const auto result_reg = read_reg(size);
+                const auto idx = read_reg(size);
+                const auto value_at = arr->Get(idx);
+                set_local(result_reg, get_local(value_at));
+                break;
+            }
+            case OpCodes::ArrSize:
+            {
+                const auto arr_dt = get_local(read_reg(size));
+                assert(arr_dt.get_type() == ::Spasm::ValueType::Array);
+                const auto arr = static_cast<SpasmImpl::SPArrayValue*>(arr_dt.get_pointer());
+                const auto result_reg = read_reg(size);
+                set_local(result_reg, data_t(double(arr->Size())));
+                break;
+            }
             default:
             {
                 std::cerr << opcode << ": not implemented" << std::endl;
@@ -273,7 +347,30 @@ void Spasm::read(reg_t reg)
 */
 void Spasm::print(reg_t reg)
 {
-    *ostr << get_local(reg);
+    auto local = get_local(reg);
+    if (local.get_type() == ::Spasm::ValueType::Array) {
+        const auto array = static_cast<const SpasmImpl::SPArrayValue*>(local.get_pointer());
+        *ostr << "[";
+        for (size_t i = 0; i < array->Size(); ++i) {
+            *ostr << get_local(array->Get(i));
+            if (i+1 < array->Size())
+                *ostr << ",";
+        }
+        *ostr << "]";
+    } else if (local.get_type() == ::Spasm::ValueType::Object) {
+        const auto obj = static_cast<SpasmImpl::SPObjectValue*>(local.get_pointer());
+        SPObject objVal = obj->GetValue();
+        *ostr << "{";
+        for (auto it = objVal.begin(); it != objVal.end(); ++it) {
+            *ostr << it->first << ":" << get_local(it->second);
+            if (std::next(it) != objVal.end()) {
+                *ostr << ",";
+            }
+        }
+        *ostr << "}";
+    } else {
+        *ostr << local;
+    }
 }
 
 /*!

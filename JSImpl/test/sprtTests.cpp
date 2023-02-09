@@ -423,3 +423,89 @@ TEST_F(SPASMTest, StringEscapeD)
 	CompileAndRun(program);
 	ASSERT_EQ(Output.str(), "the answer\\\" is 42");
 }
+
+TEST_F(SPASMTest, ArrayGetElm)
+{
+	const char* program =
+	    "push 5"              "\n"
+		"string 1 'value_1'"  "\n"
+		"string 2 'value_2'"  "\n"
+		"carr 3 2"            "\n"
+		"marr 3 0 1"          "\n"
+		"marr 3 1 2"          "\n"
+		"garr 3 4 0"          "\n"
+		"garr 3 5 1"          "\n"
+		"print 4"             "\n"
+		"print 5"             "\n"
+		;
+	CompileAndRun(program);
+	ASSERT_EQ(Output.str(), "value_1value_2");
+}
+
+TEST_F(SPASMTest, ArrayGetSize)
+{
+	const char* program =
+	    "push 4"              "\n"
+		"string 1 'value_1'"  "\n"
+		"string 2 'value_2'"  "\n"
+		"carr 3 2"            "\n"
+		"marr 3 0 1"          "\n"
+		"marr 3 1 2"          "\n"
+		"arrs 3 4"            "\n"
+		"print 4"             "\n"
+		;
+	CompileAndRun(program);
+	ASSERT_EQ(Output.str(), "2");
+}
+
+TEST_F(SPASMTest, ArrayPrint)
+{
+	const char* program =
+	    "push 3"              "\n"
+		"string 1 'value_1'"  "\n"
+		"string 2 'value_2'"  "\n"
+		"carr 3 2"            "\n"
+		"marr 3 0 1"          "\n"
+		"marr 3 1 2"          "\n"
+		"print 3"             "\n"
+		;
+	CompileAndRun(program);
+	ASSERT_EQ(Output.str(), "[value_1,value_2]");
+}
+
+TEST_F(SPASMTest, ObjectGetEl)
+{
+	const char* program =
+	    "push 7"             "\n"
+		"string 1 'key_1'"   "\n"
+		"string 2 'value_1'" "\n"
+		"string 3 'key_2'"   "\n"
+		"string 4 'value_2'" "\n"
+		"obj 5"              "\n"
+		"mobj 5 1 2"         "\n"
+		"mobj 5 3 4"         "\n"
+		"objv 5 6 1"         "\n"
+		"objv 5 7 3"         "\n"
+		"print 6"            "\n"
+		"print 7"            "\n"
+		;
+	CompileAndRun(program);
+	ASSERT_EQ(Output.str(), "value_1value_2");
+}
+
+TEST_F(SPASMTest, ObjectPrint)
+{
+	const char* program =
+	    "push 5"             "\n"
+		"string 1 'key_1'"   "\n"
+		"string 2 'value_1'" "\n"
+		"string 3 'key_2'"   "\n"
+		"string 4 'value_2'" "\n"
+		"obj 5"              "\n"
+		"mobj 5 1 2"         "\n"
+		"mobj 5 3 4"         "\n"
+		"print 5"            "\n"
+		;
+	CompileAndRun(program);
+	ASSERT_EQ(Output.str(), "{key_1:value_1,key_2:value_2}");
+}

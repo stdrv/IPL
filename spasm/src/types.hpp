@@ -6,6 +6,8 @@
 #include <vector>
 
 #include "value.hpp"
+#include "array.hpp"
+#include "object.hpp"
 
 namespace SpasmImpl
 {
